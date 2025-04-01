@@ -20,6 +20,7 @@ type DeleteByQueryService struct {
 	index                  []string
 	typ                    []string
 	query                  Query
+	script                 *Script
 	body                   interface{}
 	xSource                []string
 	xSourceExclude         []string
@@ -605,6 +606,71 @@ func (s *DeleteByQueryService) Do(ctx context.Context) (*BulkIndexByScrollRespon
 
 	// Return result
 	ret := new(BulkIndexByScrollResponse)
+	if err := s.client.decoder.Decode(res.Body, ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// getBody returns the body part of the document request.
+func (s *DeleteByQueryService) getBody() (interface{}, error) {
+	if s.body != nil {
+		return s.body, nil
+	}
+	source := make(map[string]interface{})
+	if s.script != nil {
+		src, err := s.script.Source()
+		if err != nil {
+			return nil, err
+		}
+		source["script"] = src
+	}
+	if s.query != nil {
+		src, err := s.query.Source()
+		if err != nil {
+			return nil, err
+		}
+		source["query"] = src
+	}
+	return source, nil
+}
+
+// DoAsync executes the reindexing operation asynchronously by starting a new task.
+// Callers need to use the Task Management API to watch the outcome of the reindexing
+// operation.
+func (s *DeleteByQueryService) DoAsync(ctx context.Context) (*StartTaskResult, error) {
+	// Check pre-conditions
+	if err := s.Validate(); err != nil {
+		return nil, err
+	}
+
+	// DoAsync only makes sense with WaitForCompletion set to true
+	if s.waitForCompletion != nil && *s.waitForCompletion {
+		return nil, fmt.Errorf("cannot start a task with WaitForCompletion set to true")
+	}
+	f := false
+	s.waitForCompletion = &f
+
+	// Get URL for request
+	path, params, err := s.buildURL()
+	if err != nil {
+		return nil, err
+	}
+
+	// Setup HTTP request body
+	body, err := s.getBody()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get HTTP response
+	res, err := s.client.PerformRequest(ctx, "POST", path, params, body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return operation response
+	ret := new(StartTaskResult)
 	if err := s.client.decoder.Decode(res.Body, ret); err != nil {
 		return nil, err
 	}
