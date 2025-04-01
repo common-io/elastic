@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"gopkg.in/olivere/elastic.v5/uritemplates"
+	"github.com/common-io/elastic/v5/uritemplates"
 )
 
 // IndicesGetTemplateService returns an index template.

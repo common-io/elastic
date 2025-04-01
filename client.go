@@ -21,7 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gopkg.in/olivere/elastic.v5/config"
+	"github.com/common-io/elastic/v5/config"
 )
 
 const (
@@ -155,9 +155,9 @@ type Client struct {
 //
 // Example:
 //
-//   client, err := elastic.NewClient(
-//     elastic.SetURL("http://127.0.0.1:9200", "http://127.0.0.1:9201"),
-//     elastic.SetBasicAuth("user", "secret"))
+//	client, err := elastic.NewClient(
+//	  elastic.SetURL("http://127.0.0.1:9200", "http://127.0.0.1:9201"),
+//	  elastic.SetBasicAuth("user", "secret"))
 //
 // If no URL is configured, Elastic uses DefaultURL by default.
 //

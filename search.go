@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"strings"
 
-	"gopkg.in/olivere/elastic.v5/uritemplates"
+	"github.com/common-io/elastic/v5/uritemplates"
 )
 
 // Search for documents in Elasticsearch.
